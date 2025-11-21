@@ -20,7 +20,7 @@ export default function CreateAgentPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-6">
+      <div className="flex-1 overflow-auto p-6">
         <AgentForm onSave={handleSave} onCancel={handleCancel} agent={undefined} />
       </div>
     </DashboardLayout>
