@@ -1,15 +1,33 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Copy, Check } from "lucide-react";
 
-export default function WalletHeader({ balance }: { balance: number }) {
+export default function WalletHeader({
+  balance,
+  walletAddress,
+}: {
+  balance: number;
+  walletAddress: string | null;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: { staggerChildren: 0.1 },
     },
-  }
+  };
 
   return (
     <motion.div
@@ -48,12 +66,29 @@ export default function WalletHeader({ balance }: { balance: number }) {
 
       <motion.div
         variants={{ hidden: { y: 20 }, visible: { y: 0 } }}
-        className="bg-card border border-border rounded-lg p-6"
+        className="bg-card border border-border rounded-lg p-6 flex flex-col justify-center"
       >
-        <p className="text-xs text-muted-foreground mb-2">Monthly Spend</p>
-        <p className="text-2xl font-bold text-foreground">$2,454.48</p>
-        <p className="text-xs text-destructive mt-3">↑ 12% from last month</p>
+        <p className="text-xs text-muted-foreground mb-2">Wallet Address</p>
+        {walletAddress ? (
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-mono text-foreground truncate">
+              {walletAddress}
+            </p>
+            <button
+              onClick={handleCopy}
+              className="p-1.5 rounded-md hover:bg-secondary"
+            >
+              {copied ? (
+                <Check size={16} className="text-green-500" />
+              ) : (
+                <Copy size={16} className="text-muted-foreground" />
+              )}
+            </button>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Not available</p>
+        )}
       </motion.div>
     </motion.div>
-  )
+  );
 }

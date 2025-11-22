@@ -1,8 +1,8 @@
-'use client';
+"use client"
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Zap, Landmark, Wand2 } from "lucide-react";
+import { Zap, Landmark, Wand2, Copy } from "lucide-react";
 import { Transaction } from "@/types";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import WalletHeader from "@/components/wallet/wallet-header";
@@ -10,7 +10,7 @@ import WalletActions from "@/components/wallet/wallet-actions";
 import TransactionHistory from "@/components/wallet/transaction-history";
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { ethers } from "ethers"; // or viem
+import { ethers } from "ethers";
 
 export default function WalletPage() {
   const { user, ready: privyReady, authenticated } = usePrivy();
@@ -19,9 +19,7 @@ export default function WalletPage() {
   const [balance, setBalance] = useState<number>(0);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    // ... your sample transactions here
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -40,27 +38,20 @@ export default function WalletPage() {
       return;
     }
 
-    // Find the embedded EVM wallet (walletClientType = 'privy')
-    const embedded = wallets.find(
-      (w) => w.walletClientType === 'privy'
-    );
+    const embedded = wallets.find((w) => w.walletClientType === "privy");
     if (!embedded) {
       console.warn("No embedded privy wallet found");
       return;
     }
 
-    // Set wallet address
     setWalletAddress(embedded.address);
 
-    // Get provider and fetch balance
     (async () => {
       try {
         const provider = await embedded.getEthereumProvider();
-        // If using ethers.js:
-        const etherProvider = new ethers.providers.Web3Provider(provider);
+        const etherProvider = new ethers.BrowserProvider(provider);
         const bal = await etherProvider.getBalance(embedded.address);
-        // convert from wei
-        const formatted = parseFloat(ethers.utils.formatEther(bal));
+        const formatted = parseFloat(ethers.formatEther(bal));
         setBalance(formatted);
       } catch (err) {
         console.error("Error fetching balance", err);
@@ -85,33 +76,35 @@ export default function WalletPage() {
           className="sticky top-0 bg-background/95 backdrop-blur border-b border-border z-40 p-6"
         >
           <h1 className="text-3xl font-bold text-foreground">Wallet</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {walletAddress
-              ? `Address: ${walletAddress}`
-              : "No embedded wallet found"}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {`Balance: ${balance.toFixed(4)} ETH`} {/* or USDC if you check token */}
-          </p>
         </motion.div>
 
         <div className="p-6 space-y-6">
-          <WalletHeader balance={balance} />
+          <WalletHeader balance={balance} walletAddress={walletAddress} />
           <WalletActions
             onDeposit={() => setShowDepositModal(true)}
             onWithdraw={() => setShowWithdrawModal(true)}
           />
-          <TransactionHistory
-            transactions={filteredTransactions}
-            filterStatus={filterStatus}
-            onFilterStatusChange={setFilterStatus}
-            filterType={filterType}
-            onFilterTypeChange={setFilterType}
-          />
+          {transactions.length > 0 ? (
+            <TransactionHistory
+              transactions={filteredTransactions}
+              filterStatus={filterStatus}
+              onFilterStatusChange={setFilterStatus}
+              filterType={filterType}
+              onFilterTypeChange={setFilterType}
+            />
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No transactions found.</p>
+              <p className="text-sm">
+                Your recent transactions will appear here.
+              </p>
+            </div>
+          )}
         </div>
 
         {showDepositModal && (
           <DepositModal
+            walletAddress={walletAddress}
             onClose={() => setShowDepositModal(false)}
             onConfirm={(amt) => {
               setBalance((b) => b + amt);
@@ -137,19 +130,23 @@ export default function WalletPage() {
 function DepositModal({
   onClose,
   onConfirm,
+  walletAddress,
 }: {
   onClose: () => void;
   onConfirm: (amount: number) => void;
+  walletAddress: string | null;
 }) {
   const [amount, setAmount] = useState("");
-  const [selectedWallet, setSelectedWallet] = useState("metamask");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const walletOptions = [
-    { id: "metamask", name: "MetaMask", Icon: Zap },
-    { id: "coinbase", name: "Coinbase Wallet", Icon: Landmark },
-    { id: "phantom", name: "Phantom", Icon: Wand2 },
-  ];
+  const handleCopy = () => {
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const handleSubmit = () => {
     if (!amount || parseFloat(amount) <= 0) return;
@@ -176,31 +173,23 @@ function DepositModal({
           Deposit Funds
         </h3>
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Select Wallet
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {walletOptions.map((wallet) => {
-                const Icon = wallet.Icon;
-                return (
-                  <motion.button
-                    key={wallet.id}
-                    whileHover={{ scale: 1.05 }}
-                    onClick={() => setSelectedWallet(wallet.id)}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      selectedWallet === wallet.id
-                        ? "border-primary bg-primary/10"
-                        : "border-border bg-secondary hover:border-primary/50"
-                    }`}
-                  >
-                    <div className="flex justify-center mb-1">
-                      <Icon className="w-6 h-6 text-foreground" />
-                    </div>
-                    <div className="text-xs text-foreground">{wallet.name}</div>
-                  </motion.button>
-                );
-              })}
+          <div className="text-center bg-secondary p-4 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              Your Wallet Address
+            </p>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <p className="text-lg font-mono text-foreground truncate">
+                {walletAddress}
+              </p>
+              <button onClick={handleCopy} className="p-1 text-foreground">
+                {copied ? (
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                    ✓
+                  </motion.div>
+                ) : (
+                  <Copy size={16} />
+                )}
+              </button>
             </div>
           </div>
 

@@ -1,16 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowDown, ArrowUp, Share2, Eye } from "lucide-react";
 
-import { Transaction } from "@/types"
+import { Transaction } from "@/types";
 
 interface TransactionHistoryProps {
-  transactions: Transaction[]
-  filterStatus: string
-  onFilterStatusChange: (status: string) => void
-  filterType: string
-  onFilterTypeChange: (type: string) => void
+  transactions: Transaction[];
+  filterStatus: string;
+  onFilterStatusChange: (status: string) => void;
+  filterType: string;
+  onFilterTypeChange: (type: string) => void;
 }
 
 export default function TransactionHistory({
@@ -20,13 +21,15 @@ export default function TransactionHistory({
   filterType,
   onFilterTypeChange,
 }: TransactionHistoryProps) {
-  const [expandedTx, setExpandedTx] = useState<string | null>(null)
-  const [showReceiptModal, setShowReceiptModal] = useState<string | null>(null)
+  const [expandedTx, setExpandedTx] = useState<string | null>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState<string | null>(null);
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Transaction History</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          Transaction History
+        </h2>
         <div className="flex gap-2 flex-wrap">
           <select
             value={filterStatus}
@@ -51,15 +54,7 @@ export default function TransactionHistory({
       </div>
 
       <div className="space-y-2">
-        {transactions.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-8 bg-card border border-border rounded-lg"
-          >
-            <p className="text-muted-foreground">No transactions found</p>
-          </motion.div>
-        ) : (
+        {transactions.length > 0 &&
           transactions.map((tx, idx) => (
             <motion.div
               key={tx.id}
@@ -71,9 +66,23 @@ export default function TransactionHistory({
             >
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="text-2xl">{tx.type === "income" ? "⬇️" : "⬆️"}</div>
+                  <div
+                    className={`p-2 rounded-full ${
+                      tx.type === "income"
+                        ? "bg-primary/10 text-primary"
+                        : "bg-destructive/10 text-destructive"
+                    }`}
+                  >
+                    {tx.type === "income" ? (
+                      <ArrowDown size={16} />
+                    ) : (
+                      <ArrowUp size={16} />
+                    )}
+                  </div>
                   <div className="flex-1">
-                    <p className="font-medium text-foreground text-sm">{tx.agent}</p>
+                    <p className="font-medium text-foreground text-sm">
+                      {tx.agent}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {tx.date} • {tx.time}
                     </p>
@@ -84,17 +93,22 @@ export default function TransactionHistory({
                     key={tx.amount}
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
-                    className={`font-semibold text-sm ${tx.type === "income" ? "text-primary" : "text-destructive"}`}
+                    className={`font-semibold text-sm ${
+                      tx.type === "income"
+                        ? "text-primary"
+                        : "text-destructive"
+                    }`}
                   >
-                    {tx.type === "income" ? "+" : "-"}${tx.amount.toFixed(2)} {tx.currency}
+                    {tx.type === "income" ? "+" : "-"}${tx.amount.toFixed(2)}{" "}
+                    {tx.currency}
                   </motion.p>
                   <span
                     className={`inline-block px-2 py-1 text-xs rounded mt-1 ${
                       tx.status === "success"
                         ? "bg-primary/20 text-primary"
                         : tx.status === "pending"
-                          ? "bg-accent/20 text-accent"
-                          : "bg-destructive/20 text-destructive"
+                        ? "bg-accent/20 text-accent"
+                        : "bg-destructive/20 text-destructive"
                     }`}
                   >
                     {tx.status}
@@ -113,11 +127,17 @@ export default function TransactionHistory({
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs text-muted-foreground">Recipient</p>
-                          <p className="text-sm font-medium text-foreground">{tx.recipient}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Recipient
+                          </p>
+                          <p className="text-sm font-medium text-foreground">
+                            {tx.recipient}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Amount</p>
+                          <p className="text-xs text-muted-foreground">
+                            Amount
+                          </p>
                           <p className="text-sm font-medium text-foreground">
                             {tx.amount.toFixed(2)} {tx.currency}
                           </p>
@@ -126,7 +146,9 @@ export default function TransactionHistory({
 
                       {tx.txHash && (
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1">Transaction Hash</p>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Transaction Hash
+                          </p>
                           <code className="text-xs bg-input px-3 py-2 rounded text-foreground break-all">
                             {tx.txHash}
                           </code>
@@ -139,17 +161,17 @@ export default function TransactionHistory({
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setShowReceiptModal(tx.id)}
-                            className="flex-1 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                            className="flex-1 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                           >
-                            View Receipt
+                            <Eye size={14} /> View Receipt
                           </motion.button>
                         )}
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="flex-1 px-3 py-2 text-sm rounded-lg border border-border text-foreground hover:bg-secondary transition-colors"
+                          className="flex-1 px-3 py-2 text-sm rounded-lg border border-border text-foreground hover:bg-secondary transition-colors flex items-center justify-center gap-2"
                         >
-                          Share
+                          <Share2 size={14} /> Share
                         </motion.button>
                       </div>
                     </div>
@@ -157,9 +179,8 @@ export default function TransactionHistory({
                 )}
               </AnimatePresence>
             </motion.div>
-          ))
-        )}
+          ))}
       </div>
     </div>
-  )
+  );
 }

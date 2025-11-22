@@ -1,13 +1,17 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 interface WalletActionsProps {
-  onDeposit: () => void
-  onWithdraw: () => void
+  onDeposit: () => void;
+  onWithdraw: () => void;
 }
 
-export default function WalletActions({ onDeposit, onWithdraw }: WalletActionsProps) {
+export default function WalletActions({
+  onDeposit,
+  onWithdraw,
+}: WalletActionsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <motion.button
@@ -16,7 +20,8 @@ export default function WalletActions({ onDeposit, onWithdraw }: WalletActionsPr
         onClick={onDeposit}
         className="px-6 py-4 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
       >
-        <span>⬆️</span> Deposit USDC
+        <ArrowUp size={20} />
+        <span>Deposit USDC</span>
       </motion.button>
 
       <motion.button
@@ -25,8 +30,9 @@ export default function WalletActions({ onDeposit, onWithdraw }: WalletActionsPr
         onClick={onWithdraw}
         className="px-6 py-4 rounded-lg border border-border text-foreground font-semibold hover:bg-secondary transition-colors flex items-center justify-center gap-2"
       >
-        <span>⬇️</span> Withdraw
+        <ArrowDown size={20} />
+        <span>Withdraw</span>
       </motion.button>
     </div>
-  )
+  );
 }
