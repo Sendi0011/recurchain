@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Copy, Check } from "lucide-react";
+import { Copy, ClipboardCheck } from "lucide-react";
 
 export default function WalletHeader({
   balance,
@@ -79,7 +79,7 @@ export default function WalletHeader({
               className="p-1.5 rounded-md hover:bg-secondary"
             >
               {copied ? (
-                <Check size={16} className="text-green-500" />
+                <ClipboardCheck size={16} className="text-green-500" />
               ) : (
                 <Copy size={16} className="text-muted-foreground" />
               )}

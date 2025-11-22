@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Zap, Landmark, Wand2, Copy } from "lucide-react";
+import { Zap, Landmark, Wand2, Copy, Inbox } from "lucide-react";
 import { Transaction } from "@/types";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import WalletHeader from "@/components/wallet/wallet-header";
@@ -93,11 +93,17 @@ export default function WalletPage() {
               onFilterTypeChange={setFilterType}
             />
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No transactions found.</p>
-              <p className="text-sm">
-                Your recent transactions will appear here.
-              </p>
+            <div className="relative text-center py-12 text-muted-foreground bg-card border border-border rounded-lg">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+              <div className="relative">
+                <div className="flex justify-center">
+                  <Inbox className="w-16 h-16" />
+                </div>
+                <p className="mt-4 text-lg">No transactions found.</p>
+                <p className="text-sm">
+                  Your recent transactions will appear here.
+                </p>
+              </div>
             </div>
           )}
         </div>
