@@ -34,46 +34,15 @@ export default function LoginForm() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground">Email Address</label>
-        <input
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-3 rounded-md bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-        />
-      </div>
+  
 
       <motion.div whileHover={{ scale: 0.99 }} whileTap={{ scale: 0.97 }}>
         <WalletButton/>
       </motion.div>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-background text-muted-foreground">Or continue with</span>
-        </div>
-      </div>
+  
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          variant="outline"
-          className="rounded-md border border-border bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-          onClick={handleSignUp}
-        >
-          Google
-        </Button>
-        <Button
-          variant="outline"
-          className="rounded-md border border-border bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-          onClick={handleSignUp}
-        >
-          GitHub
-        </Button>
-      </div>
+  
 
       {showSuccess && (
         <motion.div
