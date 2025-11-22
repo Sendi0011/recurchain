@@ -42,7 +42,7 @@ export default function LoginForm() {
 
   return (
     <div className="space-y-6">
-      <motion.div whileHover={{ scale: 0.99 }} whileTap={{ scale: 0.97 }}>
+      <motion.div whileHover={{ scale: 0.99 }} whileTap={{ scale: 0.97 }} className="flex justify-center">
         <SignUpButton />
       </motion.div>
 

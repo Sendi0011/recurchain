@@ -1,65 +1,72 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
-import React from "react"
-
-interface SettingsSectionProps {
-  title: string
-  description: string
-  children: React.ReactNode
-  isEditing: boolean
-  onEdit: () => void
-  onSave: (data?: any) => void
-  onCancel: () => void
-}
+import { motion } from "framer-motion"
+import { Edit, Save, X } from "lucide-react"
 
 export default function SettingsSection({
+  icon: Icon,
   title,
   description,
-  children,
   isEditing,
   onEdit,
-  onCancel,
   onSave,
-}: SettingsSectionProps) {
+  onCancel,
+  children,
+}: {
+  icon: React.ElementType
+  title: string
+  description: string
+  isEditing: boolean
+  onEdit: () => void
+  onSave: (data: any) => void
+  onCancel: () => void
+  children: React.ReactNode
+}) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-border rounded-lg p-6 hover:border-primary/30 transition-all"
+      layout
+      className="bg-background rounded-xl border border-border shadow-sm overflow-hidden"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="bg-primary/10 p-3 rounded-lg">
+              <Icon className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">{title}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            </div>
+          </div>
+          {!isEditing ? (
+            <button
+              onClick={onEdit}
+              className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            >
+              <Edit className="w-4 h-4" />
+              <span>Edit</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onSave}
+                className="flex items-center gap-2 text-sm font-semibold text-green-500 hover:text-green-500/80 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save</span>
+              </button>
+              <button
+                onClick={onCancel}
+                className="flex items-center gap-2 text-sm font-semibold text-red-500 hover:text-red-500/80 transition-colors"
+              >
+                <X className="w-4 h-4" />
+                <span>Cancel</span>
+              </button>
+            </div>
+          )}
         </div>
-        {!isEditing && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onEdit}
-            className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors whitespace-nowrap"
-          >
-            Edit
-          </motion.button>
-        )}
       </div>
-
-      <div className="mt-4">{children}</div>
-
-      <AnimatePresence>
-        {isEditing && (
-          <motion.button
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            onClick={onCancel}
-            className="mt-4 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ✕ Cancel
-          </motion.button>
-        )}
-      </AnimatePresence>
+      <div className="bg-muted/30 p-6 border-t border-border">{children}</div>
     </motion.div>
   )
 }

@@ -1,25 +1,60 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { usePrivy } from "@privy-io/react-auth"
 import { motion, AnimatePresence } from "framer-motion"
+import {
+  User,
+  Landmark,
+  Bell,
+  Shield,
+  Eye,
+  CheckCircle,
+  Save,
+  X,
+  PlusCircle,
+} from "lucide-react"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import SettingsSection from "@/components/settings/settings-section"
+import { ProfileForm } from "@/components/settings/profile-form"
+import { BankForm } from "@/components/settings/bank-form"
+import { NotificationForm } from "@/components/settings/notification-form"
+import { SecurityForm } from "@/components/settings/security-form"
+import { PrivacyForm } from "@/components/settings/privacy-form"
+import { NotificationDisplay } from "@/components/settings/notification-display"
+import { SecurityDisplay } from "@/components/settings/security-display"
+import { PrivacyDisplay } from "@/components/settings/privacy-display"
 
-export default function SettingsPage() {
-  const [settings, setSettings] = useState({
-    profile: {
-      firstName: "Alex",
-      lastName: "Johnson",
-      email: "alex@example.com",
-      phone: "+234 701 234 5678",
+const settingsConfig = {
+  profile: {
+    icon: User,
+    title: "Profile Information",
+    description: "Update your personal details",
+    fields: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
     },
-    bank: {
-      bankName: "Bank of Lagos",
-      accountName: "Alex Johnson",
-      accountNumber: "1234567890",
+    component: ProfileForm,
+  },
+  bank: {
+    icon: Landmark,
+    title: "Bank Account",
+    description: "Manage your bank details for Naira payouts",
+    fields: {
+      bankName: "",
+      accountName: "",
+      accountNumber: "",
       accountType: "savings",
     },
-    notifications: {
+    component: BankForm,
+  },
+  notifications: {
+    icon: Bell,
+    title: "Notification Preferences",
+    description: "Control how and when you receive alerts",
+    fields: {
       emailOnSuccess: true,
       emailOnFailure: true,
       emailOnReminder: true,
@@ -27,37 +62,80 @@ export default function SettingsPage() {
       pushNotifications: true,
       lowBalanceThreshold: 100,
     },
-    security: {
+    component: NotificationForm,
+    display: NotificationDisplay,
+  },
+  security: {
+    icon: Shield,
+    title: "Security",
+    description: "Protect your account with additional security options",
+    fields: {
       twoFactorAuth: false,
       biometricAuth: true,
       sessionTimeout: 30,
     },
-    privacy: {
+    component: SecurityForm,
+    display: SecurityDisplay,
+  },
+  privacy: {
+    icon: Eye,
+    title: "Privacy & Data",
+    description: "Manage your privacy preferences",
+    fields: {
       dataCollection: true,
       analyticsTracking: true,
       showBalance: true,
     },
-  })
+    component: PrivacyForm,
+    display: PrivacyDisplay,
+  },
+}
 
-  const [editingSection, setEditingSection] = useState<keyof typeof settings | null>(null)
+type Settings = typeof settingsConfig
+type SettingsSectionKey = keyof Settings
+
+export default function SettingsPage() {
+  const { user } = usePrivy()
+  const [settings, setSettings] = useState(() =>
+    Object.entries(settingsConfig).reduce(
+      (acc, [key, value]) => ({ ...acc, [key]: value.fields }),
+      {} as { [K in SettingsSectionKey]: Settings[K]["fields"] }
+    )
+  )
+
+  useEffect(() => {
+    if (user) {
+      setSettings((prevSettings) => ({
+        ...prevSettings,
+        profile: {
+          ...prevSettings.profile,
+          firstName: user.google?.name.split(" ")[0] || "",
+          lastName: user.google?.name.split(" ")[1] || "",
+          email: user.google?.email || "",
+        },
+      }))
+    }
+  }, [user])
+
+  const [editingSection, setEditingSection] = useState<SettingsSectionKey | null>(null)
   const [showSaveMessage, setShowSaveMessage] = useState(false)
   const [tempSettings, setTempSettings] = useState<typeof settings | null>(null)
 
-  type SettingsSectionType = keyof typeof settings
-
-  const handleEdit = (section: SettingsSectionType) => {
+  const handleEdit = (section: SettingsSectionKey) => {
     setTempSettings(JSON.parse(JSON.stringify(settings)))
     setEditingSection(section)
   }
 
-  const handleSave = (section: SettingsSectionType, updatedData: any) => {
-    setSettings({
-      ...settings,
-      [section]: updatedData,
-    })
+  const handleSave = (section: SettingsSectionKey) => {
+    if (tempSettings) {
+      setSettings({
+        ...settings,
+        [section]: tempSettings[section],
+      })
+    }
     setEditingSection(null)
     setShowSaveMessage(true)
-    setTimeout(() => setShowSaveMessage(false), 2000)
+    setTimeout(() => setShowSaveMessage(false), 3000)
   }
 
   const handleCancel = () => {
@@ -65,553 +143,104 @@ export default function SettingsPage() {
     setTempSettings(null)
   }
 
+  const handleFieldChange = (section: SettingsSectionKey, field: string, value: any) => {
+    if (tempSettings) {
+      setTempSettings({
+        ...tempSettings,
+        [section]: {
+          ...tempSettings[section],
+          [field]: value,
+        },
+      })
+    }
+  }
+
   return (
     <DashboardLayout>
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-muted/20">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 bg-background/95 backdrop-blur border-b border-border z-40 p-6"
+          className="sticky top-0 bg-background/95 backdrop-blur border-b border-border z-10 p-6"
         >
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage your account preferences and security</p>
         </motion.div>
 
-        <div className="p-6 max-w-4xl space-y-6">
+        <div className="p-6 max-w-4xl mx-auto space-y-8">
           <AnimatePresence>
             {showSaveMessage && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-primary/20 border border-primary rounded-lg p-4 text-primary text-sm font-medium flex items-center gap-2"
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg flex items-center gap-3"
+                role="alert"
               >
-                ✓ Settings saved successfully
+                <CheckCircle className="w-6 h-6" />
+                <p className="font-bold">Settings saved successfully!</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <SettingsSection
-            title="Profile Information"
-            description="Update your personal details"
-            isEditing={editingSection === "profile"}
-            onEdit={() => handleEdit("profile")}
-            onSave={(data) => handleSave("profile", data)}
-            onCancel={handleCancel}
-          >
-            {editingSection !== "profile" ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">First Name</p>
-                    <p className="font-semibold text-foreground">{settings.profile.firstName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Last Name</p>
-                    <p className="font-semibold text-foreground">{settings.profile.lastName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <p className="font-semibold text-foreground">{settings.profile.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Phone</p>
-                    <p className="font-semibold text-foreground">{settings.profile.phone}</p>
-                  </div>
-                </div>
-              </div>
-            ) : editingSection === "profile" && tempSettings ? (
-              <ProfileForm
-                data={tempSettings.profile}
-                onChange={(field, value) => {
-                  setTempSettings({
-                    ...tempSettings,
-                    profile: { ...tempSettings.profile, [field]: value },
-                  })
-                }}
-                onSave={() => handleSave("profile", tempSettings.profile)}
-              />
-            ) : null}
-          </SettingsSection>
+          {Object.entries(settingsConfig).map(([key, config]) => {
+            const sectionKey = key as SettingsSectionKey
+            const isEditing = editingSection === sectionKey
+            const CurrentComponent = config.component
+            const DisplayComponent = config.display
 
-          <SettingsSection
-            title="Bank Account"
-            description="Manage your bank details for Naira payouts"
-            isEditing={editingSection === "bank"}
-            onEdit={() => handleEdit("bank")}
-            onSave={(data) => handleSave("bank", data)}
-            onCancel={handleCancel}
-          >
-            {editingSection !== "bank" ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Bank Name</p>
-                    <p className="font-semibold text-foreground">{settings.bank.bankName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Account Type</p>
-                    <p className="font-semibold text-foreground capitalize">{settings.bank.accountType}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Account Name</p>
-                    <p className="font-semibold text-foreground">{settings.bank.accountName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Account Number</p>
-                    <p className="font-semibold text-foreground">{settings.bank.accountNumber}</p>
-                  </div>
-                </div>
-              </div>
-            ) : editingSection === "bank" && tempSettings ? (
-              <BankForm
-                data={tempSettings.bank}
-                onChange={(field, value) => {
-                  setTempSettings({
-                    ...tempSettings,
-                    bank: { ...tempSettings.bank, [field]: value },
-                  })
-                }}
-                onSave={() => handleSave("bank", tempSettings.bank)}
-              />
-            ) : null}
-          </SettingsSection>
+            const hasBankDetails =
+              sectionKey === "bank" &&
+              Object.values(settings.bank).some((value) => value !== "")
 
-          <SettingsSection
-            title="Notification Preferences"
-            description="Control how and when you receive alerts"
-            isEditing={editingSection === "notifications"}
-            onEdit={() => handleEdit("notifications")}
-            onSave={(data) => handleSave("notifications", data)}
-            onCancel={handleCancel}
-          >
-            {editingSection !== "notifications" ? (
-              <NotificationDisplay notifications={settings.notifications} />
-            ) : editingSection === "notifications" && tempSettings ? (
-              <NotificationForm
-                data={tempSettings.notifications}
-                onChange={(field, value) => {
-                  setTempSettings({
-                    ...tempSettings,
-                    notifications: { ...tempSettings.notifications, [field]: value },
-                  })
-                }}
-                onSave={() => handleSave("notifications", tempSettings.notifications)}
-              />
-            ) : null}
-          </SettingsSection>
-
-          <SettingsSection
-            title="Security"
-            description="Protect your account with additional security options"
-            isEditing={editingSection === "security"}
-            onEdit={() => handleEdit("security")}
-            onSave={(data) => handleSave("security", data)}
-            onCancel={handleCancel}
-          >
-            {editingSection !== "security" ? (
-              <SecurityDisplay security={settings.security} />
-            ) : editingSection === "security" && tempSettings ? (
-              <SecurityForm
-                data={tempSettings.security}
-                onChange={(field, value) => {
-                  setTempSettings({
-                    ...tempSettings,
-                    security: { ...tempSettings.security, [field]: value },
-                  })
-                }}
-                onSave={() => handleSave("security", tempSettings.security)}
-              />
-            ) : null}
-          </SettingsSection>
-
-          <SettingsSection
-            title="Privacy & Data"
-            description="Manage your privacy preferences"
-            isEditing={editingSection === "privacy"}
-            onEdit={() => handleEdit("privacy")}
-            onSave={(data) => handleSave("privacy", data)}
-            onCancel={handleCancel}
-          >
-            {editingSection !== "privacy" ? (
-              <PrivacyDisplay privacy={settings.privacy} />
-            ) : editingSection === "privacy" && tempSettings ? (
-              <PrivacyForm
-                data={tempSettings.privacy}
-                onChange={(field, value) => {
-                  setTempSettings({
-                    ...tempSettings,
-                    privacy: { ...tempSettings.privacy, [field]: value },
-                  })
-                }}
-                onSave={() => handleSave("privacy", tempSettings.privacy)}
-              />
-            ) : null}
-          </SettingsSection>
+            return (
+              <SettingsSection
+                key={sectionKey}
+                icon={config.icon}
+                title={config.title}
+                description={config.description}
+                isEditing={isEditing}
+                onEdit={() => handleEdit(sectionKey)}
+                onSave={() => handleSave(sectionKey)}
+                onCancel={handleCancel}
+              >
+                {isEditing && tempSettings ? (
+                  <CurrentComponent
+                    data={tempSettings[sectionKey]}
+                    onChange={(field: string, value: any) => handleFieldChange(sectionKey, field, value)}
+                  />
+                ) : DisplayComponent ? (
+                  <DisplayComponent {...{ [sectionKey]: settings[sectionKey] }} />
+                ) : sectionKey === "bank" && !hasBankDetails ? (
+                  <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed border-border rounded-lg">
+                    <Landmark className="w-12 h-12 mb-4" />
+                    <h4 className="font-semibold text-lg mb-2">No bank account added</h4>
+                    <p className="text-sm mb-4">Add your bank account to receive Naira payouts.</p>
+                    <button
+                      onClick={() => handleEdit("bank")}
+                      className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors bg-primary/10 px-4 py-2 rounded-lg"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Add Bank Account</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {Object.entries(settings[sectionKey]).map(([field, value]) => (
+                      <div key={field}>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {field.replace(/([A-Z])/g, " $1")}
+                        </p>
+                        <p className="font-semibold text-foreground">{String(value)}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </SettingsSection>
+            )
+          })}
         </div>
       </div>
     </DashboardLayout>
-  )
-}
-
-function ProfileForm({
-  data,
-  onChange,
-  onSave,
-}: {
-  data: any
-  onChange: (field: string, value: string) => void
-  onSave: () => void
-}) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">First Name</label>
-        <input
-          type="text"
-          value={data.firstName}
-          onChange={(e) => onChange("firstName", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Last Name</label>
-        <input
-          type="text"
-          value={data.lastName}
-          onChange={(e) => onChange("lastName", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-        <input
-          type="email"
-          value={data.email}
-          onChange={(e) => onChange("email", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Phone</label>
-        <input
-          type="tel"
-          value={data.phone}
-          onChange={(e) => onChange("phone", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <button
-        onClick={onSave}
-        className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-      >
-        Save Changes
-      </button>
-    </div>
-  )
-}
-
-function BankForm({
-  data,
-  onChange,
-  onSave,
-}: {
-  data: any
-  onChange: (field: string, value: string) => void
-  onSave: () => void
-}) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Bank Name</label>
-        <input
-          type="text"
-          value={data.bankName}
-          onChange={(e) => onChange("bankName", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Account Name</label>
-        <input
-          type="text"
-          value={data.accountName}
-          onChange={(e) => onChange("accountName", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Account Number</label>
-        <input
-          type="text"
-          value={data.accountNumber}
-          onChange={(e) => onChange("accountNumber", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Account Type</label>
-        <select
-          value={data.accountType}
-          onChange={(e) => onChange("accountType", e.target.value)}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
-        >
-          <option value="checking">Checking</option>
-          <option value="savings">Savings</option>
-        </select>
-      </div>
-      <button
-        onClick={onSave}
-        className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-      >
-        Save Changes
-      </button>
-    </div>
-  )
-}
-
-function NotificationDisplay({ notifications }: { notifications: any }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Success notifications</span>
-        <span className={notifications.emailOnSuccess ? "text-primary" : "text-muted-foreground"}>
-          {notifications.emailOnSuccess ? "✓" : "○"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Failure alerts</span>
-        <span className={notifications.emailOnFailure ? "text-primary" : "text-muted-foreground"}>
-          {notifications.emailOnFailure ? "✓" : "○"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Payment reminders</span>
-        <span className={notifications.emailOnReminder ? "text-primary" : "text-muted-foreground"}>
-          {notifications.emailOnReminder ? "✓" : "○"}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function NotificationForm({
-  data,
-  onChange,
-  onSave,
-}: {
-  data: any
-  onChange: (field: string, value: boolean | number) => void
-  onSave: () => void
-}) {
-  return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={data.emailOnSuccess}
-            onChange={(e) => onChange("emailOnSuccess", e.target.checked)}
-            className="w-4 h-4 rounded border-border"
-          />
-          <span className="text-sm text-foreground">Email on successful payment</span>
-        </label>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={data.emailOnFailure}
-            onChange={(e) => onChange("emailOnFailure", e.target.checked)}
-            className="w-4 h-4 rounded border-border"
-          />
-          <span className="text-sm text-foreground">Email on payment failure</span>
-        </label>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={data.emailOnReminder}
-            onChange={(e) => onChange("emailOnReminder", e.target.checked)}
-            className="w-4 h-4 rounded border-border"
-          />
-          <span className="text-sm text-foreground">Payment reminders</span>
-        </label>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={data.smsAlerts}
-            onChange={(e) => onChange("smsAlerts", e.target.checked)}
-            className="w-4 h-4 rounded border-border"
-          />
-          <span className="text-sm text-foreground">SMS alerts</span>
-        </label>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={data.pushNotifications}
-            onChange={(e) => onChange("pushNotifications", e.target.checked)}
-            className="w-4 h-4 rounded border-border"
-          />
-          <span className="text-sm text-foreground">Push notifications</span>
-        </label>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Low Balance Alert Threshold (USDC)</label>
-        <input
-          type="number"
-          value={data.lowBalanceThreshold}
-          onChange={(e) => onChange("lowBalanceThreshold", Number.parseInt(e.target.value))}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <button
-        onClick={onSave}
-        className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-      >
-        Save Changes
-      </button>
-    </div>
-  )
-}
-
-function SecurityDisplay({ security }: { security: any }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Two-factor authentication</span>
-        <span className={security.twoFactorAuth ? "text-primary" : "text-muted-foreground"}>
-          {security.twoFactorAuth ? "✓" : "○"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Biometric authentication</span>
-        <span className={security.biometricAuth ? "text-primary" : "text-muted-foreground"}>
-          {security.biometricAuth ? "✓" : "○"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Session timeout</span>
-        <span className="text-sm font-semibold text-foreground">{security.sessionTimeout} minutes</span>
-      </div>
-    </div>
-  )
-}
-
-function SecurityForm({
-  data,
-  onChange,
-  onSave,
-}: {
-  data: any
-  onChange: (field: string, value: boolean | number) => void
-  onSave: () => void
-}) {
-  return (
-    <div className="space-y-4">
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={data.twoFactorAuth}
-          onChange={(e) => onChange("twoFactorAuth", e.target.checked)}
-          className="w-4 h-4 rounded border-border"
-        />
-        <span className="text-sm text-foreground">Enable two-factor authentication</span>
-      </label>
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={data.biometricAuth}
-          onChange={(e) => onChange("biometricAuth", e.target.checked)}
-          className="w-4 h-4 rounded border-border"
-        />
-        <span className="text-sm text-foreground">Enable biometric authentication</span>
-      </label>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Session Timeout (minutes)</label>
-        <input
-          type="number"
-          value={data.sessionTimeout}
-          onChange={(e) => onChange("sessionTimeout", Number.parseInt(e.target.value))}
-          className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
-      </div>
-      <button
-        onClick={onSave}
-        className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-      >
-        Save Changes
-      </button>
-    </div>
-  )
-}
-
-function PrivacyDisplay({ privacy }: { privacy: any }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Allow data collection</span>
-        <span className={privacy.dataCollection ? "text-primary" : "text-muted-foreground"}>
-          {privacy.dataCollection ? "✓" : "○"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Analytics tracking</span>
-        <span className={privacy.analyticsTracking ? "text-primary" : "text-muted-foreground"}>
-          {privacy.analyticsTracking ? "✓" : "○"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-foreground">Public balance</span>
-        <span className={privacy.showBalance ? "text-primary" : "text-muted-foreground"}>
-          {privacy.showBalance ? "✓" : "○"}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function PrivacyForm({
-  data,
-  onChange,
-  onSave,
-}: {
-  data: any
-  onChange: (field: string, value: boolean) => void
-  onSave: () => void
-}) {
-  return (
-    <div className="space-y-4">
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={data.dataCollection}
-          onChange={(e) => onChange("dataCollection", e.target.checked)}
-          className="w-4 h-4 rounded border-border"
-        />
-        <span className="text-sm text-foreground">Allow anonymous data collection for improvement</span>
-      </label>
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={data.analyticsTracking}
-          onChange={(e) => onChange("analyticsTracking", e.target.checked)}
-          className="w-4 h-4 rounded border-border"
-        />
-        <span className="text-sm text-foreground">Enable analytics tracking</span>
-      </label>
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={data.showBalance}
-          onChange={(e) => onChange("showBalance", e.target.checked)}
-          className="w-4 h-4 rounded border-border"
-        />
-        <span className="text-sm text-foreground">Show balance publicly</span>
-      </label>
-      <button
-        onClick={onSave}
-        className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-      >
-        Save Changes
-      </button>
-    </div>
   )
 }
