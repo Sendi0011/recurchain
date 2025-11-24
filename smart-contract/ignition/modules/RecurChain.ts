@@ -1,6 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-const USDC_TOKEN_ADDRESS = "0x...'; // Replace with actual USDC address on the target network
+const USDC_TOKEN_ADDRESS = "0x...";  // Replace with actual USDC address on the target network
 const FEE_COLLECTOR_ADDRESS = "0x..."; // Replace with the fee collector's address
 const INITIAL_PLATFORM_FEE = 10; // 0.1% in basis points
 

@@ -5,7 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowDown, ArrowUp, Share2, Eye, Copy } from "lucide-react";
 
 import { Transaction } from "@/types";
-import { convertEthToUsd, formatUsd } from "@/utils/currency"; // Import utility functions
+import {
+  convertEthToUsd,
+  formatUsd,
+  truncateAddress,
+} from "@/utils/currency"; // Import utility functions
 
 interface TransactionHistoryProps {
   transactions: Transaction[];
@@ -74,7 +78,9 @@ export default function TransactionHistory({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 className="bg-card border border-border rounded-lg hover:border-primary/30 transition-all cursor-pointer"
-                onClick={() => setExpandedTx(expandedTx === tx.id ? null : tx.id)}
+                onClick={() =>
+                  setExpandedTx(expandedTx === tx.id ? null : tx.id)
+                }
               >
                 <div className="p-2 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2 sm:gap-4 flex-1">
@@ -92,8 +98,8 @@ export default function TransactionHistory({
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-foreground text-xs sm:text-sm truncate">
-                        {tx.agent}
+                      <p className="font-medium text-foreground text-xs sm:text-sm">
+                        {truncateAddress(tx.agent)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {tx.date} • {tx.time}

@@ -18,3 +18,10 @@ export const formatEth = (ethAmount: number | null): string => {
   }
   return `${ethAmount.toFixed(4)} ETH`;
 };
+
+export const truncateAddress = (address: string, chars = 4) => {
+  if (!address) return "";
+  return `${address.substring(0, chars + 2)}...${address.substring(
+    address.length - chars
+  )}`;
+};
