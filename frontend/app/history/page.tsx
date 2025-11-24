@@ -119,7 +119,7 @@ export default function HistoryPage() {
             <div>
               <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
                 <BarChart3 className="w-8 h-8 text-primary" />
-                Transaction History
+              Agent  Transaction History
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Track all your recurring payment transactions</p>
             </div>

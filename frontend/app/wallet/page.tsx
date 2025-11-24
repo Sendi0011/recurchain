@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -21,6 +21,8 @@ export default function WalletPage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [ethToUsdRate, setEthToUsdRate] = useState<number | null>(null); // New state for ETH to USD rate
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isTransactionsRefreshing, setIsTransactionsRefreshing] =
+    useState(false);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -97,6 +99,7 @@ export default function WalletPage() {
   const fetchTransactions = async () => {
     if (!walletAddress) return;
 
+    setIsTransactionsRefreshing(true);
     try {
       // Using a placeholder API key for now. In a real app, this should be secured.
       const apiKey = process.env.NEXT_PUBLIC_BASESCAN_API_KEY || "";
@@ -135,6 +138,8 @@ export default function WalletPage() {
     } catch (error) {
       console.error("Failed to fetch transactions:", error);
       setTransactions([]); // Clear transactions on error
+    } finally {
+      setIsTransactionsRefreshing(false);
     }
   };
 
@@ -209,6 +214,8 @@ export default function WalletPage() {
               filterType={filterType}
               onFilterTypeChange={setFilterType}
               ethToUsdRate={ethToUsdRate} // Pass ethToUsdRate
+              onRefresh={fetchTransactions}
+              isRefreshing={isTransactionsRefreshing}
             />
           ) : (
             <div className="relative text-center py-12 text-muted-foreground bg-card border border-border rounded-lg">
@@ -472,9 +479,9 @@ function SendModal({
             <div className="space-y-4 bg-secondary/50 p-4 rounded-lg">
               <div className="flex items-center gap-3">
                 <User size={16} className="text-muted-foreground" />
-                <div>
+                <div className="overflow-hidden">
                   <p className="text-xs text-muted-foreground">Recipient</p>
-                  <p className="text-sm font-mono text-foreground truncate">
+                  <p className="text-sm font-mono text-foreground break-all">
                     {to}
                   </p>
                 </div>

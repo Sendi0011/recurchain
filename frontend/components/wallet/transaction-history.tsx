@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowDown, ArrowUp, Share2, Eye, Copy } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Share2,
+  Eye,
+  Copy,
+  RefreshCw,
+} from "lucide-react";
 
 import { Transaction } from "@/types";
 import {
@@ -18,6 +25,8 @@ interface TransactionHistoryProps {
   filterType: string;
   onFilterTypeChange: (type: string) => void;
   ethToUsdRate: number | null; // Accept ethToUsdRate as a prop
+  onRefresh: () => void; // Add onRefresh prop
+  isRefreshing: boolean; // Add isRefreshing prop
 }
 
 export default function TransactionHistory({
@@ -27,6 +36,8 @@ export default function TransactionHistory({
   filterType,
   onFilterTypeChange,
   ethToUsdRate, // Destructure the prop
+  onRefresh,
+  isRefreshing,
 }: TransactionHistoryProps) {
   const [expandedTx, setExpandedTx] = useState<string | null>(null);
   const [showReceiptModal, setShowReceiptModal] = useState<string | null>(null);
@@ -64,6 +75,16 @@ export default function TransactionHistory({
             <option value="income">Income</option>
             <option value="expense">Expense</option>
           </select>
+          <button
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="p-2 rounded-lg bg-input border border-border text-foreground hover:bg-secondary disabled:opacity-50 transition-colors"
+          >
+            <RefreshCw
+              size={16}
+              className={isRefreshing ? "animate-spin" : ""}
+            />
+          </button>
         </div>
       </div>
 
