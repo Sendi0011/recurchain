@@ -13,12 +13,8 @@ export const metadata: Metadata = {
   description:
     "Recurring payments powered by USDC on Base. Automate your finances with precision.",
   icons: {
-    icon: [
-      { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
-      { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-    ],
-    apple: "/apple-icon.png",
+    icon: "/recurchain_logo.png",
+    apple: "/recurchain_logo.png",
   },
 };
 

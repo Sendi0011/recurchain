@@ -14,7 +14,7 @@ export const privyConfig: PrivyClientConfig = {
     showWalletLoginFirst: false, // Set to false to resolve the warning
     theme: 'light',
     accentColor: '#676FFF',
-    logo: 'https://your-logo-url.com',
+    logo: '/recurchain_logo.png',
   },
   supportedChains: [
     baseSepolia,

@@ -18,6 +18,7 @@ export default function LoginPage() {
         className="relative z-10 w-full max-w-md"
       >
         <div className="text-center mb-8">
+          <img src="/recurchain_logo.png" alt="" />
           <motion.h1
             className="text-4xl font-bold text-foreground mb-2"
             initial={{ opacity: 0 }}
